@@ -9,10 +9,7 @@ df.display()
 from sklearn.model_selection import train_test_split
 
 pd_df = df.toPandas()
-X = pd_df.drop('loan_status',axis=1)
-y = pd_df['loan_status']
-X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
-X_train.head()
+pd_df
 
 # COMMAND ----------
 
@@ -27,12 +24,25 @@ from sklearn.metrics import accuracy_score
 
 #transforming the dataset:
 le = LabelEncoder()
-cat_cols = X_train.select_dtypes(exclude='number')
+cat_cols = pd_df.select_dtypes(exclude='number')
+tr_df = pd_df.copy()
 for i in cat_cols:
-    X_train[i] = le.fit_transform(X_train[i].values.reshape(-1,1))
-    X_test[i] = le.transform(X_test[i].values.reshape(-1,1))
+    tr_df[i] = le.fit_transform(tr_df[i].values.reshape(-1,1))
 
-X_train
+tr_df
+
+# COMMAND ----------
+
+#saving the transformed data:
+spark.createDataFrame(tr_df).write.mode("overwrite").saveAsTable('credit_risk_transformed_data')
+
+# COMMAND ----------
+
+#splitting the dataset:
+X = tr_df.drop('loan_status',axis=1)
+y = tr_df['loan_status']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+X_train.head()
 
 # COMMAND ----------
 
